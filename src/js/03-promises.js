@@ -2,7 +2,17 @@ import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const form = document.querySelector('.form');
 
-form.addEventListener('click', onPromiseCreate);
+form.addEventListener('submit', onPromiseCreate);
+
+function onPromiseCreate(e) {
+  e.preventDefault();
+  const { delay, step, amount } = e.target;
+  let inputDelay = Number(delay.value);
+  let inputStep = Number(step.value);
+  let inputAmount = Number(amount.value);
+  makePromises(inputDelay, inputStep, inputAmount);
+  e.target.reset();
+}
 
 function createPromise(position, delay) {
   return new Promise((resolve, reject) => {
@@ -17,17 +27,9 @@ function createPromise(position, delay) {
   });
 }
 
-function onPromiseCreate(e) {
-  e.preventDefault();
-  const { delay, step, amount } = e.currentTarget.elements;
-  let inputDelay = Number(delay.value);
-  let inputStep = Number(step.value);
-  let inputAmount = Number(amount.value);
-
-  for (let i = 1; i <= inputAmount; i += 1) {
-    inputDelay += inputStep;
-
-    createPromise(i, inputDelay)
+function makePromises(delay, step, amount) {
+  for (let position = 1; position <= amount; position += 1) {
+    createPromise(position, delay)
       .then(({ position, delay }) => {
         Notify.success(
           `✅ Fulfilled promise ${position} in ${delay}ms`
@@ -38,6 +40,6 @@ function onPromiseCreate(e) {
           `❌ Rejected promise ${position} in ${delay}ms`
         );
       });
-    e.currentTarget.reset();
+    delay += step;
   }
 }
