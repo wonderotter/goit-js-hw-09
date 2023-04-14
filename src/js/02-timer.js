@@ -9,36 +9,43 @@ const countHours = document.querySelector('span[data-hours]');
 const countMin = document.querySelector('span[data-minutes]');
 const countSec = document.querySelector('span[data-seconds]');
 
+
 let intervalId = null;
-startBtn.disabled = true;
+disable(true);
 
 const options = {
     enableTime: true,
     time_24hr: true,
     defaultDate: new Date(),
     minuteIncrement: 1,
-    onClose([selectedDates]) {
-        if (selectedDates <= Date.now()) {
+    onClose(selectedDates) {
+        const currentTime = Date.now();
+        if (selectedDates[0] <= currentTime) {
             Notiflix.Notify.failure('Please choose a date in the future');
-            startBtn.disabled = true;
+            return;
         }
-        startBtn.disabled = false;
+        disable(false);
+        console.log(selectedDates[0]);
     },
 };
 
-const picker = flatpickr(flatpickrEL, options);
+flatpickr(flatpickrEL, options);
 
 startBtn.addEventListener('click', onStartTimer);
 
 function onStartTimer() {
-    startBtn.disabled = true;
+    disable(true);
 
     intervalId = setInterval(() => {
-        const selectDate = picker.selectedDates[0];
-        const startCount = selectDate - Date.now();
-        const timeValue = convertMs(startCount);
+        const timeStart = Date.now();
 
-        onUpdateTimer(timeValue);
+        let timeEnd = flatpickrEL.value;
+        timeEnd = Date.parse(timeEnd);
+
+        const startCount = timeEnd - timeStart;
+
+        const time = convertMs(startCount);
+        onUpdateTimer(time);
 
         if (startCount < 1000) {
             clearInterval(intervalId);
@@ -51,6 +58,10 @@ function onUpdateTimer({ days, hours, minutes, seconds }) {
     countHours.textContent = addLeadingZero(hours);
     countMin.textContent = addLeadingZero(minutes);
     countSec.textContent = addLeadingZero(seconds);
+}
+
+function disable(bool) {
+    startBtn.disabled = bool;
 }
 
 function addLeadingZero(value) {
